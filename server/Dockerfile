@@ -1,15 +1,18 @@
-FROM node:20-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy server package.json
+# Copy package files
 COPY package.json ./
 
-RUN yarn install
+# Install dependencies using yarn
+RUN yarn install --frozen-lockfile
 
-# Copy server files
+# Copy server code
 COPY server.js ./
 
+# Expose port
 EXPOSE 3000
 
-CMD ["yarn", "start"]
+# Start the server
+CMD ["node", "server.js"]

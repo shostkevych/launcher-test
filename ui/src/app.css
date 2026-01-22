@@ -1,0 +1,30 @@
+:root {
+  --primary: #0a0e27;
+  --secondary: #1a1f3a;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --gradient-start: #6366f1;
+  --gradient-end: #8b5cf6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+    'Helvetica Neue', Arial, sans-serif;
+  background: var(--primary);
+  color: var(--text);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+}
