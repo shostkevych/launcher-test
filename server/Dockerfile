@@ -10,6 +10,7 @@ RUN yarn install --frozen-lockfile
 
 # Copy server code
 COPY server.js ./
+COPY views ./views
 
 # Expose port
 EXPOSE 3000
