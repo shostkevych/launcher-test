@@ -8,15 +8,13 @@ const PORT = process.env.PORT || 3000;
 
 // PostgreSQL connection
 const pool = new Pool({
-  host: process.env.DB1_HOST,
-  port: process.env.DB1_PORT,
-  database: process.env.DB1_DATABASE,
-  user: process.env.DB1_USER,
-  password: process.env.DB1_PASSWORD,
+  connectionString: process.env.DB1_URL,
 });
 
 // ETA templating setup
-const eta = new Eta({ views: path.join(__dirname, 'views') });
+const viewsPath = path.join(__dirname, 'views');
+console.log('Views path:', viewsPath);
+const eta = new Eta({ views: viewsPath });
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -44,7 +42,8 @@ app.get('/', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM todos ORDER BY created_at DESC');
     const todos = result.rows;
-    res.send(eta.render('index', { todos }));
+    const templatePath = path.join(viewsPath, 'index.eta');
+    res.send(await eta.renderFile(templatePath, { todos }));
   } catch (error) {
     console.error('Error fetching todos:', error);
     res.status(500).send('Error loading todos');
