@@ -6,29 +6,9 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Parse and escape DB1_URL password
-function escapeConnectionUrl(url) {
-  if (!url) return url;
-  try {
-    const urlObj = new URL(url);
-    if (urlObj.password) {
-      // URL-encode the password
-      const encodedPassword = encodeURIComponent(urlObj.password);
-      urlObj.password = encodedPassword;
-      return urlObj.toString();
-    }
-    return url;
-  } catch (error) {
-    // If URL parsing fails, return original
-    return url;
-  }
-}
-
 // PostgreSQL connection
-const originalDbUrl = process.env.DB1_URL;
-const dbUrl = escapeConnectionUrl(originalDbUrl);
-console.log('DB1_URL (original):', originalDbUrl);
-console.log('DB1_URL (escaped):', dbUrl);
+const dbUrl = process.env.DB2_URL;
+console.log('DB2_URL:', dbUrl);
 const pool = new Pool({
   connectionString: dbUrl,
 });
