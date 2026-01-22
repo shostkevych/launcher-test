@@ -44,8 +44,7 @@ app.get('/', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM todos ORDER BY created_at DESC');
     const todos = result.rows;
-    const templatePath = path.join(viewsPath, 'index.eta');
-    res.send(await eta.renderFile(templatePath, { todos }));
+    res.send(eta.render('index', { todos }));
   } catch (error) {
     console.error('Error fetching todos:', error);
     res.status(500).send('Error loading todos');
