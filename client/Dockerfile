@@ -10,6 +10,4 @@ COPY . .
 
 RUN yarn build
 
-EXPOSE 3000
-
-CMD ["yarn", "start"]
+# The dist folder will contain the built static files
