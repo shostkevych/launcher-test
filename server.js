@@ -62,4 +62,9 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Container IP: ${getContainerIP()}`);
   console.log(`Hostname: ${os.hostname()}`);
   console.log(`Container ID: ${CONTAINER_ID}`);
+  
+  // Log TEST environment variable every 5 seconds
+  setInterval(() => {
+    console.log(`TEST env variable: ${process.env.TEST || 'not set'}`);
+  }, 5000);
 });
