@@ -1,8 +1,12 @@
 const express = require('express');
 const os = require('os');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Generate unique container identifier on startup
+const CONTAINER_ID = crypto.randomBytes(8).toString('hex');
 
 // Get container IP address
 function getContainerIP() {
@@ -38,6 +42,15 @@ app.get('/', (req, res) => {
     message: 'Hello from Docker Swarm',
     containerIP: containerIP,
     hostname: hostname,
+    containerId: CONTAINER_ID,
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    containerId: CONTAINER_ID,
     timestamp: new Date().toISOString()
   });
 });
@@ -46,4 +59,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Container IP: ${getContainerIP()}`);
   console.log(`Hostname: ${os.hostname()}`);
+  console.log(`Container ID: ${CONTAINER_ID}`);
 });
