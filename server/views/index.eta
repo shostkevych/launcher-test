@@ -12,8 +12,8 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-      color: #e2e8f0;
+      background: #0a0a0a;
+      color: #e5e5e5;
       min-height: 100vh;
       padding: 3rem 1.5rem;
     }
@@ -26,14 +26,11 @@
       font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #a78bfa 0%, #818cf8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: #ffffff;
     }
     .subtitle {
       text-align: center;
-      color: #64748b;
+      color: #737373;
       margin-bottom: 2.5rem;
       font-size: 0.95rem;
     }
@@ -46,26 +43,26 @@
       flex: 1;
       padding: 1rem 1.25rem;
       font-size: 1rem;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: #171717;
+      border: 1px solid #404040;
       border-radius: 12px;
-      color: #e2e8f0;
+      color: #e5e5e5;
       transition: all 0.2s;
     }
     .form input::placeholder {
-      color: #64748b;
+      color: #737373;
     }
     .form input:focus {
       outline: none;
-      border-color: #818cf8;
-      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+      border-color: #a3a3a3;
+      box-shadow: 0 0 0 3px rgba(163, 163, 163, 0.15);
     }
     .form button {
       padding: 1rem 1.5rem;
       font-size: 1rem;
       font-weight: 600;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-      color: white;
+      background: #ffffff;
+      color: #0a0a0a;
       border: none;
       border-radius: 12px;
       cursor: pointer;
@@ -73,7 +70,7 @@
     }
     .form button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
     }
     .todo-list {
       list-style: none;
@@ -82,9 +79,8 @@
       gap: 0.75rem;
     }
     .todo-item {
-      background: rgba(30, 41, 59, 0.6);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(99, 102, 241, 0.15);
+      background: #171717;
+      border: 1px solid #262626;
       border-radius: 12px;
       padding: 1rem 1.25rem;
       display: flex;
@@ -93,7 +89,7 @@
       transition: all 0.2s;
     }
     .todo-item:hover {
-      border-color: rgba(99, 102, 241, 0.3);
+      border-color: #404040;
       transform: translateX(4px);
     }
     .todo-item.completed {
@@ -101,7 +97,7 @@
     }
     .todo-item.completed .todo-text {
       text-decoration: line-through;
-      color: #64748b;
+      color: #737373;
     }
     .todo-text {
       flex: 1;
@@ -122,36 +118,38 @@
       transition: all 0.2s;
     }
     .btn-toggle {
-      background: rgba(99, 102, 241, 0.2);
-      color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      background: #262626;
+      color: #d4d4d4;
+      border: 1px solid #404040;
     }
     .btn-toggle:hover {
-      background: rgba(99, 102, 241, 0.3);
+      background: #404040;
     }
     .btn-delete {
-      background: rgba(239, 68, 68, 0.2);
-      color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: #262626;
+      color: #a3a3a3;
+      border: 1px solid #404040;
     }
     .btn-delete:hover {
-      background: rgba(239, 68, 68, 0.3);
+      background: #404040;
+      color: #e5e5e5;
     }
     .empty {
       text-align: center;
-      color: #64748b;
+      color: #737373;
       padding: 3rem 2rem;
-      background: rgba(30, 41, 59, 0.4);
+      background: #171717;
       border-radius: 12px;
-      border: 1px dashed rgba(99, 102, 241, 0.2);
+      border: 1px dashed #404040;
     }
     .empty-icon {
       font-size: 2.5rem;
       margin-bottom: 0.75rem;
+      filter: grayscale(1);
     }
     .count {
       text-align: center;
-      color: #64748b;
+      color: #737373;
       font-size: 0.85rem;
       margin-top: 1.5rem;
     }
