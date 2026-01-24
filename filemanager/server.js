@@ -4,7 +4,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Eta } from "eta";
 import { S3Client, ListObjectsV2Command, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import Busboy from "busboy";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -61,13 +60,13 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }
 
-// Helper: Get signed URL for download
-async function getDownloadUrl(key) {
+// Helper: Get file from S3
+async function getFile(key) {
   const command = new GetObjectCommand({
     Bucket: BUCKET,
     Key: key,
   });
-  return getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  return s3Client.send(command);
 }
 
 // Helper: Upload file to S3
@@ -209,15 +208,32 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // Download/View file
+    // Download/View file (proxied through server)
     if (pathname === "/download" && req.method === "GET") {
       const key = url.searchParams.get("key");
+      const download = url.searchParams.get("dl") === "1";
       if (!key) {
         return send(res, 400, "Key required");
       }
       try {
-        const downloadUrl = await getDownloadUrl(key);
-        return redirect(res, downloadUrl, 302);
+        const s3Response = await getFile(key);
+        const filename = key.split("/").pop();
+        const contentType = s3Response.ContentType || "application/octet-stream";
+        
+        const headers = {
+          "Content-Type": contentType,
+          "Content-Length": s3Response.ContentLength,
+        };
+        
+        if (download) {
+          headers["Content-Disposition"] = `attachment; filename="${filename}"`;
+        } else {
+          headers["Content-Disposition"] = `inline; filename="${filename}"`;
+        }
+        
+        res.writeHead(200, headers);
+        s3Response.Body.pipe(res);
+        return;
       } catch (error) {
         console.error("Download error:", error);
         return send(res, 500, "Download failed: " + error.message);
