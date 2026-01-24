@@ -1,4 +1,4 @@
 node_modules/
-bun.lockb
+yarn.lock
 .env
 .DS_Store

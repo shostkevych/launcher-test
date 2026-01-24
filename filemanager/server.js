@@ -1,9 +1,14 @@
+import http from "http";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { Eta } from "eta";
 import { S3Client, ListObjectsV2Command, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import path from "path";
+import Busboy from "busboy";
 
-const eta = new Eta({ views: path.join(import.meta.dir, "views") });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const eta = new Eta({ views: path.join(__dirname, "views") });
 
 // S3 Configuration
 const s3Client = new S3Client({
@@ -27,16 +32,16 @@ async function listFiles(prefix = "") {
   });
 
   const response = await s3Client.send(command);
-  
-  const folders = (response.CommonPrefixes || []).map(p => ({
+
+  const folders = (response.CommonPrefixes || []).map((p) => ({
     name: p.Prefix.replace(prefix, "").replace("/", ""),
     key: p.Prefix,
     type: "folder",
   }));
 
   const files = (response.Contents || [])
-    .filter(obj => obj.Key !== prefix)
-    .map(obj => ({
+    .filter((obj) => obj.Key !== prefix)
+    .map((obj) => ({
       name: obj.Key.replace(prefix, ""),
       key: obj.Key,
       size: formatBytes(obj.Size),
@@ -85,54 +90,122 @@ async function deleteFile(key) {
   await s3Client.send(command);
 }
 
-// Server
-const server = Bun.serve({
-  port: 3000,
-  async fetch(req) {
-    const url = new URL(req.url);
-    const pathname = url.pathname;
+// Helper: Parse URL-encoded form data
+function parseFormData(body) {
+  const params = new URLSearchParams(body);
+  const result = {};
+  for (const [key, value] of params) {
+    result[key] = value;
+  }
+  return result;
+}
 
+// Helper: Parse multipart form data
+function parseMultipart(req) {
+  return new Promise((resolve, reject) => {
+    const fields = {};
+    let fileData = null;
+
+    const busboy = Busboy({ headers: req.headers });
+
+    busboy.on("file", (fieldname, file, info) => {
+      const { filename, mimeType } = info;
+      const chunks = [];
+
+      file.on("data", (chunk) => chunks.push(chunk));
+      file.on("end", () => {
+        fileData = {
+          name: filename,
+          type: mimeType,
+          buffer: Buffer.concat(chunks),
+        };
+      });
+    });
+
+    busboy.on("field", (fieldname, val) => {
+      fields[fieldname] = val;
+    });
+
+    busboy.on("finish", () => {
+      resolve({ fields, file: fileData });
+    });
+
+    busboy.on("error", reject);
+
+    req.pipe(busboy);
+  });
+}
+
+// Helper: Read request body
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on("data", (chunk) => chunks.push(chunk));
+    req.on("end", () => resolve(Buffer.concat(chunks).toString()));
+    req.on("error", reject);
+  });
+}
+
+// Helper: Send response
+function send(res, statusCode, body, contentType = "text/html") {
+  res.writeHead(statusCode, { "Content-Type": contentType });
+  res.end(body);
+}
+
+// Helper: Redirect
+function redirect(res, location, statusCode = 303) {
+  res.writeHead(statusCode, { Location: location });
+  res.end();
+}
+
+// Server
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const pathname = url.pathname;
+
+  try {
     // Serve static CSS
     if (pathname === "/style.css") {
-      return new Response(Bun.file(path.join(import.meta.dir, "public", "style.css")), {
-        headers: { "Content-Type": "text/css" },
-      });
+      const cssPath = path.join(__dirname, "public", "style.css");
+      const css = fs.readFileSync(cssPath, "utf-8");
+      return send(res, 200, css, "text/css");
     }
 
     // Main page - list files
     if (pathname === "/" && req.method === "GET") {
       const prefix = url.searchParams.get("path") || "";
+      const errorParam = url.searchParams.get("error");
       try {
         const files = await listFiles(prefix);
-        const parentPath = prefix ? prefix.split("/").slice(0, -2).join("/") + (prefix.split("/").length > 2 ? "/" : "") : null;
-        const html = eta.render("index", { files, currentPath: prefix, parentPath });
-        return new Response(html, { headers: { "Content-Type": "text/html" } });
+        const parentPath = prefix
+          ? prefix.split("/").slice(0, -2).join("/") + (prefix.split("/").length > 2 ? "/" : "")
+          : null;
+        const html = eta.render("index", { files, currentPath: prefix, parentPath, error: errorParam });
+        return send(res, 200, html);
       } catch (error) {
         console.error("Error listing files:", error);
         const html = eta.render("index", { files: [], currentPath: prefix, parentPath: null, error: error.message });
-        return new Response(html, { headers: { "Content-Type": "text/html" } });
+        return send(res, 200, html);
       }
     }
 
     // Upload file
     if (pathname === "/upload" && req.method === "POST") {
       try {
-        const formData = await req.formData();
-        const file = formData.get("file");
-        const currentPath = formData.get("path") || "";
+        const { fields, file } = await parseMultipart(req);
+        const currentPath = fields.path || "";
 
-        if (!file || typeof file === "string") {
-          return Response.redirect(`/?path=${encodeURIComponent(currentPath)}&error=No file provided`, 303);
+        if (!file) {
+          return redirect(res, `/?path=${encodeURIComponent(currentPath)}&error=No file provided`);
         }
 
         const key = currentPath + file.name;
-        const buffer = await file.arrayBuffer();
-        await uploadFile(key, Buffer.from(buffer), file.type);
+        await uploadFile(key, file.buffer, file.type);
 
-        return Response.redirect(`/?path=${encodeURIComponent(currentPath)}`, 303);
+        return redirect(res, `/?path=${encodeURIComponent(currentPath)}`);
       } catch (error) {
         console.error("Upload error:", error);
-        return Response.redirect(`/?error=${encodeURIComponent(error.message)}`, 303);
+        return redirect(res, `/?error=${encodeURIComponent(error.message)}`);
       }
     }
 
@@ -140,60 +213,63 @@ const server = Bun.serve({
     if (pathname === "/download" && req.method === "GET") {
       const key = url.searchParams.get("key");
       if (!key) {
-        return new Response("Key required", { status: 400 });
+        return send(res, 400, "Key required");
       }
       try {
         const downloadUrl = await getDownloadUrl(key);
-        return Response.redirect(downloadUrl, 302);
+        return redirect(res, downloadUrl, 302);
       } catch (error) {
         console.error("Download error:", error);
-        return new Response("Download failed: " + error.message, { status: 500 });
+        return send(res, 500, "Download failed: " + error.message);
       }
     }
 
     // Delete file
     if (pathname === "/delete" && req.method === "POST") {
       try {
-        const formData = await req.formData();
-        const key = formData.get("key");
-        const currentPath = formData.get("path") || "";
+        const body = await readBody(req);
+        const { key, path: currentPath } = parseFormData(body);
 
         if (!key) {
-          return Response.redirect(`/?path=${encodeURIComponent(currentPath)}&error=Key required`, 303);
+          return redirect(res, `/?path=${encodeURIComponent(currentPath || "")}&error=Key required`);
         }
 
         await deleteFile(key);
-        return Response.redirect(`/?path=${encodeURIComponent(currentPath)}`, 303);
+        return redirect(res, `/?path=${encodeURIComponent(currentPath || "")}`);
       } catch (error) {
         console.error("Delete error:", error);
-        return Response.redirect(`/?error=${encodeURIComponent(error.message)}`, 303);
+        return redirect(res, `/?error=${encodeURIComponent(error.message)}`);
       }
     }
 
     // Create folder
     if (pathname === "/create-folder" && req.method === "POST") {
       try {
-        const formData = await req.formData();
-        const folderName = formData.get("folderName");
-        const currentPath = formData.get("path") || "";
+        const body = await readBody(req);
+        const { folderName, path: currentPath } = parseFormData(body);
 
         if (!folderName) {
-          return Response.redirect(`/?path=${encodeURIComponent(currentPath)}&error=Folder name required`, 303);
+          return redirect(res, `/?path=${encodeURIComponent(currentPath || "")}&error=Folder name required`);
         }
 
-        // Create an empty object with trailing slash to represent folder
-        const key = currentPath + folderName + "/";
+        const key = (currentPath || "") + folderName + "/";
         await uploadFile(key, Buffer.from(""), "application/x-directory");
 
-        return Response.redirect(`/?path=${encodeURIComponent(currentPath)}`, 303);
+        return redirect(res, `/?path=${encodeURIComponent(currentPath || "")}`);
       } catch (error) {
         console.error("Create folder error:", error);
-        return Response.redirect(`/?error=${encodeURIComponent(error.message)}`, 303);
+        return redirect(res, `/?error=${encodeURIComponent(error.message)}`);
       }
     }
 
-    return new Response("Not Found", { status: 404 });
-  },
+    return send(res, 404, "Not Found");
+  } catch (error) {
+    console.error("Server error:", error);
+    return send(res, 500, "Internal Server Error");
+  }
 });
 
-console.log(`File Manager running at http://localhost:${server.port}`);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`File Manager running at http://localhost:${PORT}`);
+});

@@ -1,12 +1,12 @@
-FROM oven/bun:1-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
 COPY package.json ./
-RUN bun install --production
+RUN yarn install --production
 
 COPY . .
 
 EXPOSE 3000
 
-CMD ["bun", "run", "server.js"]
+CMD ["node", "server.js"]
