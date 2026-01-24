@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Manager</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📁 File Manager</h1>
+    </header>
+
+    <% if (it.error) { %>
+      <div class="error-banner">
+        <%= it.error %>
+      </div>
+    <% } %>
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="/">Home</a>
+      <% if (it.currentPath) { %>
+        <% const parts = it.currentPath.split('/').filter(p => p); %>
+        <% let accumulated = ''; %>
+        <% parts.forEach((part, i) => { %>
+          <% accumulated += part + '/'; %>
+          <span>/</span>
+          <a href="/?path=<%= encodeURIComponent(accumulated) %>"><%= part %></a>
+        <% }); %>
+      <% } %>
+    </nav>
+
+    <!-- Actions Bar -->
+    <div class="actions-bar">
+      <!-- Upload Form -->
+      <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form">
+        <input type="hidden" name="path" value="<%= it.currentPath %>">
+        <input type="file" name="file" id="fileInput" required>
+        <button type="submit" class="btn btn-primary">Upload</button>
+      </form>
+
+      <!-- Create Folder -->
+      <form action="/create-folder" method="POST" class="folder-form">
+        <input type="hidden" name="path" value="<%= it.currentPath %>">
+        <input type="text" name="folderName" placeholder="New folder name" required>
+        <button type="submit" class="btn btn-secondary">Create Folder</button>
+      </form>
+    </div>
+
+    <!-- Files List -->
+    <div class="files-container">
+      <% if (it.parentPath !== null) { %>
+        <div class="file-item folder">
+          <a href="/?path=<%= encodeURIComponent(it.parentPath) %>" class="file-link">
+            <span class="file-icon">📁</span>
+            <span class="file-name">..</span>
+            <span class="file-meta">Parent folder</span>
+          </a>
+        </div>
+      <% } %>
+
+      <% if (it.files && it.files.length > 0) { %>
+        <% it.files.forEach(file => { %>
+          <div class="file-item <%= file.type %>">
+            <% if (file.type === 'folder') { %>
+              <a href="/?path=<%= encodeURIComponent(file.key) %>" class="file-link">
+                <span class="file-icon">📁</span>
+                <span class="file-name"><%= file.name %></span>
+                <span class="file-meta">Folder</span>
+              </a>
+            <% } else { %>
+              <div class="file-link">
+                <span class="file-icon">📄</span>
+                <span class="file-name"><%= file.name %></span>
+                <span class="file-meta"><%= file.size %> • <%= file.lastModified %></span>
+              </div>
+              <div class="file-actions">
+                <a href="/download?key=<%= encodeURIComponent(file.key) %>" class="btn btn-small" target="_blank">View/Download</a>
+                <form action="/delete" method="POST" class="delete-form" onsubmit="return confirm('Delete this file?')">
+                  <input type="hidden" name="key" value="<%= file.key %>">
+                  <input type="hidden" name="path" value="<%= it.currentPath %>">
+                  <button type="submit" class="btn btn-small btn-danger">Delete</button>
+                </form>
+              </div>
+            <% } %>
+          </div>
+        <% }); %>
+      <% } else if (!it.parentPath) { %>
+        <div class="empty-state">
+          <p>No files yet. Upload your first file!</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>
