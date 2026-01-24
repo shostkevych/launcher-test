@@ -24,6 +24,7 @@ const BUCKET = process.env.TESTMORE_BUCKET;
 
 // Helper: List files from S3
 async function listFiles(prefix = "") {
+  
   const command = new ListObjectsV2Command({
     Bucket: BUCKET,
     Prefix: prefix,
