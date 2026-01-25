@@ -259,9 +259,10 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // Crash endpoint - intentionally crash the server
+    // Crash endpoint
     if (pathname === "/crash" && req.method === "POST") {
-      throw new Error("💥 INTENTIONAL SERVER CRASH - This error was triggered manually!");
+      const obj = undefined;
+      obj.property.value;
     }
 
     // Create folder
