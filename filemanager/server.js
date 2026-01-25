@@ -259,6 +259,12 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
+    // Crash endpoint - intentionally crash the server
+    if (pathname === "/crash" && req.method === "POST") {
+      console.log("Crash requested - crashing server...");
+      process.exit(1);
+    }
+
     // Create folder
     if (pathname === "/create-folder" && req.method === "POST") {
       try {

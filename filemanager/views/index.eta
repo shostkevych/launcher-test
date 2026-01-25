@@ -47,6 +47,11 @@
         <input type="text" name="folderName" placeholder="New folder name" required>
         <button type="submit" class="btn btn-secondary">Create Folder</button>
       </form>
+
+      <!-- Crash Server -->
+      <form action="/crash" method="POST" class="crash-form" onsubmit="return confirm('This will crash the server. Continue?')">
+        <button type="submit" class="btn btn-danger">💥 Crash Server</button>
+      </form>
     </div>
 
     <!-- Files List -->
