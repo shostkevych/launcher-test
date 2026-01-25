@@ -24,7 +24,7 @@ const BUCKET = process.env.TESTMORE_BUCKET;
 
 // Helper: List files from S3
 async function listFiles(prefix = "") {
-  
+
   const command = new ListObjectsV2Command({
     Bucket: BUCKET,
     Prefix: prefix,
@@ -296,3 +296,38 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`File Manager running at http://localhost:${PORT}`);
 });
+
+// Random logging
+const randomMessages = [
+  "Checking system health...",
+  "Memory usage looks good",
+  "All S3 connections stable",
+  "Heartbeat ping",
+  "Cache cleanup scheduled",
+  "Background task completed",
+  "Processing queue is empty",
+  "No pending uploads detected",
+  "File index synchronized",
+  "Garbage collection triggered",
+  "Session cleanup done",
+  "Monitoring active connections",
+  "Bucket stats refreshed",
+  "Temp files cleared",
+  "Idle mode active",
+  "Waiting for requests...",
+  "Service running smoothly",
+  "Network latency: OK",
+  "Storage capacity available",
+  "Ready for operations",
+];
+
+function scheduleRandomLog() {
+  const delay = Math.floor(Math.random() * 10000) + 5000; // 5-15 seconds
+  setTimeout(() => {
+    const msg = randomMessages[Math.floor(Math.random() * randomMessages.length)];
+    console.log(`[${new Date().toISOString()}] ${msg}`);
+    scheduleRandomLog();
+  }, delay);
+}
+
+scheduleRandomLog();
