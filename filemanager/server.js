@@ -322,7 +322,7 @@ const randomMessages = [
 ];
 
 function scheduleRandomLog() {
-  const delay = Math.floor(Math.random() * 10000) + 5000; // 5-15 seconds
+  const delay = Math.floor(Math.random() * 800) + 100; // 100-900 ms
   setTimeout(() => {
     const msg = randomMessages[Math.floor(Math.random() * randomMessages.length)];
     console.log(`[${new Date().toISOString()}] ${msg}`);
