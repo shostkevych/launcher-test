@@ -18,9 +18,10 @@ const pool = new Pool(
         database: process.env.TODO_DATABASE,
         user: process.env.TODO_USER,
         password: process.env.TODO_PASSWORD,
-        
+
       }
 );
+
 
 // ETA templating setup
 const viewsPath = path.join(__dirname, 'views');
