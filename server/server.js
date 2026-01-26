@@ -7,17 +7,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // PostgreSQL connection
-const dbUrl = process.env.SOMEDB_URL;
-console.log('SOMEDB_URL:', dbUrl);
+const dbUrl = process.env.TODO_URL;
+console.log('TODO_URL:', dbUrl);
 const pool = new Pool(
   dbUrl
     ? { connectionString: dbUrl }
     : {
-        host: process.env.SOMEDB_HOST,
-        port: process.env.SOMEDB_PORT,
-        database: process.env.SOMEDB_DATABASE,
-        user: process.env.SOMEDB_USER,
-        password: process.env.SOMEDB_PASSWORD,
+        host: process.env.TODO_HOST,
+        port: process.env.TODO_PORT,
+        database: process.env.TODO_DATABASE,
+        user: process.env.TODO_USER,
+        password: process.env.TODO_PASSWORD,
       }
 );
 
