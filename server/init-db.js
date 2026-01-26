@@ -1,8 +1,8 @@
 const { Pool } = require('pg');
 
 // PostgreSQL connection
-const dbUrl = process.env.DB2_URL;
-console.log('DB2_URL:', dbUrl);
+const dbUrl = process.env.SOMEDB_URL;
+console.log('SOMEDB_URL:', dbUrl);
 const pool = new Pool({
   connectionString: dbUrl,
 });
