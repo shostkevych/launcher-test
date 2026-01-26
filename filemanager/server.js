@@ -11,16 +11,16 @@ const eta = new Eta({ views: path.join(__dirname, "views") });
 
 // S3 Configuration
 const s3Client = new S3Client({
-  region: process.env.TESTMORE_REGION,
-  endpoint: process.env.TESTMORE_ENDPOINT,
+  region: process.env.FILES_REGION,
+  endpoint: process.env.FILES_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.TESTMORE_ACCESS_KEY_ID,
-    secretAccessKey: process.env.TESTMORE_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.FILES_ACCESS_KEY_ID,
+    secretAccessKey: process.env.FILES_SECRET_ACCESS_KEY,
   },
   forcePathStyle: true,
 });
 
-const BUCKET = process.env.TESTMORE_BUCKET;
+const BUCKET = process.env.FILES_BUCKET;
 
 // Helper: List files from S3
 async function listFiles(prefix = "") {
