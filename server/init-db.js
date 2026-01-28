@@ -1,17 +1,17 @@
 const { Pool } = require('pg');
 
 // PostgreSQL connection
-const dbUrl = process.env.TODO_URL;
-console.log('TODO_URL:', dbUrl);
+const dbUrl = process.env.TODO_DB_URL;
+console.log('TODO_DB_URL:', dbUrl);
 const pool = new Pool(
   dbUrl
     ? { connectionString: dbUrl }
     : {
-        host: process.env.TODO_HOST,
-        port: process.env.TODO_PORT,
-        database: process.env.TODO_DATABASE,
-        user: process.env.TODO_USER,
-        password: process.env.TODO_PASSWORD,
+        host: process.env.TODO_DB_HOST,
+        port: process.env.TODO_DB_PORT,
+        database: process.env.TODO_DB_DATABASE,
+        user: process.env.TODO_DB_USER,
+        password: process.env.TODO_DB_PASSWORD,
       }
 );
 
