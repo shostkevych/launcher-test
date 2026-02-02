@@ -61,6 +61,35 @@ app.get('/', async (req, res) => {
   }
 });
 
+// API: get todos (JSON)
+app.get('/api/todos', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM todos ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching todos:', error);
+    res.status(500).json({ error: 'Error loading todos' });
+  }
+});
+
+// API: create todo (JSON body: { text })
+app.post('/api/todos', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || !String(text).trim()) {
+      return res.status(400).json({ error: 'text is required' });
+    }
+    const result = await pool.query(
+      'INSERT INTO todos (text) VALUES ($1) RETURNING *',
+      [String(text).trim()]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating todo:', error);
+    res.status(500).json({ error: 'Error creating todo' });
+  }
+});
+
 app.post('/todos', async (req, res) => {
   try {
     const { text } = req.body;
